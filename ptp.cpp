@@ -23,7 +23,12 @@ void generate_ptp_header (char type, unsigned char* result) {
     transportSpecific = '0';
 
     if(type < 4)messageType = type + 47;
-    else messageType = type + 51;
+    else if(type < 7) messageType = type + 51;
+    else if(type == 7) messageType = 'a';
+    else if(type == 8) messageType = 'b';
+    else if(type == 9) messageType = 'c';
+    else if(type == 10) messageType = 'd';
+
 
     reserved1 = '0';
 
@@ -36,7 +41,7 @@ void generate_ptp_header (char type, unsigned char* result) {
         string_bintohex((unsigned char*) b_messageLength, s_messageLength);
         strcopy(&s_messageLength[0], messageLength, 0, 3);
     }
-    else if(type == ptp_type::pdelay_req_ptp || type == ptp_type::pdelay_resp_ptp || type == ptp_type::delay_resp_ptp){
+    else if(type == ptp_type::pdelay_req_ptp || type == ptp_type::pdelay_resp_ptp || type == ptp_type::delay_resp_ptp || type == ptp_type::pdelay_resp_follow_up_ptp){
         strcpy(b_messageLength, "0000000000110110\0");
         string_bintohex((unsigned char*) b_messageLength, s_messageLength);
         strcopy(&s_messageLength[0], messageLength, 0, 3);
@@ -301,6 +306,39 @@ void ptp_send (EthernetSocket ethSocket, char* init_packet) {
             receiveTimestamp.size_bin = receiveTimestamp.size_hex * 4;
             strcat(packet.string_bin, receiveTimestamp.string_bin);
             packet.size_bin += receiveTimestamp.size_bin;
+
+            cout << "Insert requestingPortIdentity like 'abcdef0123456789abcd': " << endl;
+            cin >> requestingPortIdentity.string_hex;
+            requestingPortIdentity.size_hex = strlen(&requestingPortIdentity.string_hex[0]);
+            string_hextobin(requestingPortIdentity.string_hex, (unsigned char*)requestingPortIdentity.string_bin, requestingPortIdentity.size_hex * 8);
+            requestingPortIdentity.size_bin = requestingPortIdentity.size_hex * 4;
+            strcat(packet.string_bin, requestingPortIdentity.string_bin);
+            packet.size_bin += requestingPortIdentity.size_bin;
+
+            packet_to_buf(packet.buf, packet.string_bin);
+            packet.size_buf = packet.size_bin / 8;
+
+            bytes_sended = Ethernet_sendPacket(ethSocket, (unsigned char*)packet.buf, packet.size_buf);
+            string_bintohex((unsigned char*)packet.string_bin, hex_packet);
+            printf("Data sent: %d bytes:\n%s\n", bytes_sended, &hex_packet[0]);
+        }
+        else if(selected_ptp_type == ptp_type::pdelay_resp_follow_up_ptp){
+            unsigned char header[PTP_HEADER_SIZE * 8 + 1];
+            super_data responseOriginTimestamp;
+            super_data requestingPortIdentity;
+
+            generate_ptp_header(ptp_type::pdelay_resp_follow_up_ptp, header);
+            
+            strcat(packet.string_bin, (char*)header);
+            packet.size_bin += strlen((char*)header);
+
+            cout << "Insert responseOriginTimestamp like 'abcdef0123456789abcd': " << endl;
+            cin >> responseOriginTimestamp.string_hex;
+            responseOriginTimestamp.size_hex = strlen(&responseOriginTimestamp.string_hex[0]);
+            string_hextobin(responseOriginTimestamp.string_hex, (unsigned char*)responseOriginTimestamp.string_bin, responseOriginTimestamp.size_hex * 8);
+            responseOriginTimestamp.size_bin = responseOriginTimestamp.size_hex * 4;
+            strcat(packet.string_bin, responseOriginTimestamp.string_bin);
+            packet.size_bin += responseOriginTimestamp.size_bin;
 
             cout << "Insert requestingPortIdentity like 'abcdef0123456789abcd': " << endl;
             cin >> requestingPortIdentity.string_hex;
