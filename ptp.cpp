@@ -22,7 +22,8 @@ void generate_ptp_header (char type, unsigned char* result) {
 
     transportSpecific = '0';
 
-    messageType = type + 47;
+    if(type < 4)messageType = type + 47;
+    else messageType = type + 51;
 
     reserved1 = '0';
 
@@ -74,12 +75,22 @@ void generate_ptp_header (char type, unsigned char* result) {
     for(int i = 0; i < 4; i++) sequenceId[i] = '0';
 
     if(type == ptp_type::sync_ptp){
-        controlField[0] = '0';
-        controlField[1] = '0';
+        controlField[0] = '0'; controlField[1] = '0';
+    }
+    else if(type == ptp_type::delay_req_ptp){
+        controlField[0] = '0'; controlField[1] = '1';
+    }
+    else if(type == ptp_type::follow_up_ptp){
+        controlField[0] = '0'; controlField[1] = '2';
+    }
+    else if(type == ptp_type::delay_resp_ptp){
+        controlField[0] = '0'; controlField[1] = '3';
+    }
+    else if(type == ptp_type::management_ptp){
+        controlField[0] = '0'; controlField[1] = '4';
     }
     else{
-        controlField[0] = '0';
-        controlField[1] = '5';
+        controlField[0] = '0'; controlField[1] = '5';
     }
     logMessageInterval[0] = '0'; logMessageInterval[1] = '0';
 
@@ -105,6 +116,7 @@ void generate_ptp_header (char type, unsigned char* result) {
 }
 
 void ptp_send (EthernetSocket ethSocket, char* init_packet) {
+    while(1){
     super_data packet;
     strcpy(packet.string_bin, init_packet);
     packet.size_bin += strlen(init_packet);
@@ -114,7 +126,7 @@ void ptp_send (EthernetSocket ethSocket, char* init_packet) {
     packet.size_bin += strlen(PTP_ETHERTYPE);
 
 
-    while(1){
+    
         string input;
         int selected_ptp_type;
         cout << "Select Type of ptp packet: " << endl;
@@ -124,7 +136,12 @@ void ptp_send (EthernetSocket ethSocket, char* init_packet) {
         cin >> selected_ptp_type;
         clear_page();
         if(selected_ptp_type == ptp_type::null_ptp){
-            //Do nothing
+            packet_to_buf(packet.buf, packet.string_bin);
+            packet.size_buf = packet.size_bin / 8;
+
+            bytes_sended = Ethernet_sendPacket(ethSocket, (unsigned char*)packet.buf, packet.size_buf);
+            string_bintohex((unsigned char*)packet.string_bin, hex_packet);
+            printf("Data sent: %d bytes:\n%s\n", bytes_sended, &hex_packet[0]);
         }
         else if(selected_ptp_type == ptp_type::sync_ptp){
             unsigned char header[PTP_HEADER_SIZE * 8 + 1];
@@ -234,6 +251,31 @@ void ptp_send (EthernetSocket ethSocket, char* init_packet) {
             requestingPortIdentity.size_bin = requestingPortIdentity.size_hex * 4;
             strcat(packet.string_bin, requestingPortIdentity.string_bin);
             packet.size_bin += requestingPortIdentity.size_bin;
+
+            packet_to_buf(packet.buf, packet.string_bin);
+            packet.size_buf = packet.size_bin / 8;
+
+            bytes_sended = Ethernet_sendPacket(ethSocket, (unsigned char*)packet.buf, packet.size_buf);
+            string_bintohex((unsigned char*)packet.string_bin, hex_packet);
+            printf("Data sent: %d bytes:\n%s\n", bytes_sended, &hex_packet[0]);
+        }
+        else if(selected_ptp_type == ptp_type::follow_up_ptp){
+            unsigned char header[PTP_HEADER_SIZE * 8 + 1];
+            super_data preciseOriginTimestamp;
+
+            generate_ptp_header(ptp_type::follow_up_ptp, header);
+            
+            strcat(packet.string_bin, (char*)header);
+            packet.size_bin += strlen((char*)header);
+
+            cout << "Insert preciseOriginTimestamp like 'abcdef0123456789abcd': " << endl;
+            cin >> preciseOriginTimestamp.string_hex;
+            preciseOriginTimestamp.size_hex = strlen(&preciseOriginTimestamp.string_hex[0]);
+            string_hextobin(preciseOriginTimestamp.string_hex, (unsigned char*)preciseOriginTimestamp.string_bin, preciseOriginTimestamp.size_hex * 8);
+            preciseOriginTimestamp.size_bin = preciseOriginTimestamp.size_hex * 4;
+            strcat(packet.string_bin, preciseOriginTimestamp.string_bin);
+            packet.size_bin += preciseOriginTimestamp.size_bin;
+
 
             packet_to_buf(packet.buf, packet.string_bin);
             packet.size_buf = packet.size_bin / 8;
