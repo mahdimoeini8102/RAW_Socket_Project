@@ -30,16 +30,17 @@ void generate_ptp_header (char type, unsigned char* result) {
 
     string s_messageLength;
     char b_messageLength[17];
-    if(type == ptp_type::sync_ptp){
+    if(type == ptp_type::sync_ptp || type == ptp_type::delay_req_ptp || type == ptp_type::follow_up_ptp){
         strcpy(b_messageLength, "0000000000101100\0");
         string_bintohex((unsigned char*) b_messageLength, s_messageLength);
         strcopy(&s_messageLength[0], messageLength, 0, 3);
     }
-    else if(type == ptp_type::delay_req_ptp){
-        strcpy(b_messageLength, "0000000000101100\0");
+    else if(type == ptp_type::pdelay_req_ptp){
+        strcpy(b_messageLength, "0000000000110110\0");
         string_bintohex((unsigned char*) b_messageLength, s_messageLength);
         strcopy(&s_messageLength[0], messageLength, 0, 3);
     }
+
     else{
         messageLength[0] = '0'; messageLength[1] = '0'; messageLength[2] = '0'; messageLength[3] = '0';
     }
@@ -77,9 +78,9 @@ void generate_ptp_header (char type, unsigned char* result) {
         controlField[0] = '0';
         controlField[1] = '0';
     }
-    else if(type == ptp_type::delay_req_ptp){
+    else{
         controlField[0] = '0';
-        controlField[1] = '1';
+        controlField[1] = '5';
     }
     logMessageInterval[0] = '0'; logMessageInterval[1] = '0';
 
@@ -168,6 +169,39 @@ void ptp_send (EthernetSocket ethSocket, char* init_packet) {
 
             strcat(packet.string_bin, originTimestamp.string_bin);
             packet.size_bin += originTimestamp.size_bin;
+
+            packet_to_buf(packet.buf, packet.string_bin);
+            packet.size_buf = packet.size_bin / 8;
+
+            bytes_sended = Ethernet_sendPacket(ethSocket, (unsigned char*)packet.buf, packet.size_buf);
+            string_bintohex((unsigned char*)packet.string_bin, hex_packet);
+            printf("Data sent: %d bytes:\n%s\n", bytes_sended, &hex_packet[0]);
+        }
+        else if(selected_ptp_type == ptp_type::pdelay_req_ptp){
+            unsigned char header[PTP_HEADER_SIZE * 8 + 1];
+            super_data originTimestamp;
+            super_data reserved;
+            reserved.string_hex = "00000000000000000000";
+            reserved.size_hex = 20;
+            string_hextobin(reserved.string_hex, (unsigned char *)reserved.string_bin, 80);
+            reserved.size_bin = 80;
+            generate_ptp_header(ptp_type::pdelay_req_ptp, header);
+            
+            strcat(packet.string_bin, (char*)header);
+            packet.size_bin += strlen((char*)header);
+
+            cout << "Insert originTimestamp like 'abcdef0123456789abcd': " << endl;
+            cin >> originTimestamp.string_hex;
+            originTimestamp.size_hex = strlen(&originTimestamp.string_hex[0]);
+            string_hextobin(originTimestamp.string_hex, (unsigned char*)originTimestamp.string_bin, originTimestamp.size_hex * 8);
+            originTimestamp.size_bin = originTimestamp.size_hex * 4;
+
+
+            strcat(packet.string_bin, originTimestamp.string_bin);
+            packet.size_bin += originTimestamp.size_bin;
+            
+            strcat(packet.string_bin, reserved.string_bin);
+            packet.size_bin += reserved.size_bin;
 
             packet_to_buf(packet.buf, packet.string_bin);
             packet.size_buf = packet.size_bin / 8;
