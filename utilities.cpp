@@ -181,6 +181,7 @@ int stringlen (char* input) {
     for(int i = 1000; i > 0; i--){
         if(input[i - 1] != '\0') return i;
     }
+    return 0;
 }
 
 void show_mac_address (string string_hex_mac) {
