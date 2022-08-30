@@ -90,11 +90,7 @@ void generate_ptp_header (char type, unsigned char* result) {
     strcat(header, controlField);
     strcat(header, logMessageInterval);
     
-    cout << "Header:" << endl;
-    for(int i = 0; i < PTP_HEADER_SIZE * 2; i++)printf("%c", header[i]);
-    cout << endl;
     string_hextobin(header, result, PTP_HEADER_SIZE * 8 + 1);
-    
 }
 
 void ptp_send (EthernetSocket ethSocket, char* init_packet) {
@@ -141,7 +137,6 @@ void ptp_send (EthernetSocket ethSocket, char* init_packet) {
             packet.size_buf = packet.size_bin / 8;
 
             bytes_sended = Ethernet_sendPacket(ethSocket, (unsigned char*)packet.buf, packet.size_buf);
-            printf("%x", packet.buf);
             string_bintohex((unsigned char*)packet.string_bin, hex_packet);
             printf("Data sent: %d bytes:\n%s\n", bytes_sended, &hex_packet[0]);
         }
