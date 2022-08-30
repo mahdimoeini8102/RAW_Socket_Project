@@ -355,6 +355,15 @@ void ptp_send (EthernetSocket ethSocket, char* init_packet) {
             string_bintohex((unsigned char*)packet.string_bin, hex_packet);
             printf("Data sent: %d bytes:\n%s\n", bytes_sended, &hex_packet[0]);
         }
+        else if(selected_ptp_type == ptp_type::announce_ptp){
+            cout << "It's not ready now!" << endl;
+        }
+        else if(selected_ptp_type == ptp_type::signaling_ptp){
+            cout << "It's not ready now!" << endl;
+        }
+        else if(selected_ptp_type == ptp_type::management_ptp){
+            cout << "It's not ready now!" << endl;
+        }
         else if(selected_ptp_type == ptp_type::cancel_ptp){
             cout << "Sending ptp canceled." << endl;
             break;
