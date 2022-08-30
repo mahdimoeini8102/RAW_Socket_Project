@@ -46,6 +46,11 @@ void generate_ptp_header (char type, unsigned char* result) {
         string_bintohex((unsigned char*) b_messageLength, s_messageLength);
         strcopy(&s_messageLength[0], messageLength, 0, 3);
     }
+    else if(type == ptp_type::announce_ptp){
+        strcpy(b_messageLength, "0000000001000000\0");
+        string_bintohex((unsigned char*) b_messageLength, s_messageLength);
+        strcopy(&s_messageLength[0], messageLength, 0, 3);
+    }
     else{
         messageLength[0] = '0'; messageLength[1] = '0'; messageLength[2] = '0'; messageLength[3] = '0';
     }
@@ -356,7 +361,99 @@ void ptp_send (EthernetSocket ethSocket, char* init_packet) {
             printf("Data sent: %d bytes:\n%s\n", bytes_sended, &hex_packet[0]);
         }
         else if(selected_ptp_type == ptp_type::announce_ptp){
-            cout << "It's not ready now!" << endl;
+            unsigned char header[PTP_HEADER_SIZE * 8 + 1];
+            super_data originTimestamp;
+            super_data currentUtcOffset;
+            super_data reserved;
+            reserved.string_hex = "00";
+            reserved.size_hex = 2;
+            string_hextobin(reserved.string_hex, (unsigned char *)reserved.string_bin, 8);
+            reserved.size_bin = 8;
+            super_data grandmasterPriority1;
+            super_data grandmasterClockQuality;
+            super_data grandmasterPriority2;
+            super_data grandmasterIdentity;
+            super_data stepsRemoved;
+            super_data timeSource;
+
+            generate_ptp_header(ptp_type::announce_ptp, header);
+            
+            strcat(packet.string_bin, (char*)header);
+            packet.size_bin += strlen((char*)header);
+
+            cout << "Insert originTimestamp like 'abcdef0123456789abcd': " << endl;
+            cin >> originTimestamp.string_hex;
+            originTimestamp.size_hex = strlen(&originTimestamp.string_hex[0]);
+            string_hextobin(originTimestamp.string_hex, (unsigned char*)originTimestamp.string_bin, originTimestamp.size_hex * 8);
+            originTimestamp.size_bin = originTimestamp.size_hex * 4;
+            strcat(packet.string_bin, originTimestamp.string_bin);
+            packet.size_bin += originTimestamp.size_bin;
+
+            cout << "Insert currentUtcOffset like '8520': " << endl;
+            cin >> currentUtcOffset.string_hex;
+            currentUtcOffset.size_hex = strlen(&currentUtcOffset.string_hex[0]);
+            string_hextobin(currentUtcOffset.string_hex, (unsigned char*)currentUtcOffset.string_bin, currentUtcOffset.size_hex * 8);
+            currentUtcOffset.size_bin = currentUtcOffset.size_hex * 4;
+            strcat(packet.string_bin, currentUtcOffset.string_bin);
+            packet.size_bin += currentUtcOffset.size_bin;
+
+            strcat(packet.string_bin, reserved.string_bin);
+            packet.size_bin += reserved.size_bin;
+
+            cout << "Insert grandmasterPriority1 like 'aa': " << endl;
+            cin >> grandmasterPriority1.string_hex;
+            grandmasterPriority1.size_hex = strlen(&grandmasterPriority1.string_hex[0]);
+            string_hextobin(grandmasterPriority1.string_hex, (unsigned char*)grandmasterPriority1.string_bin, grandmasterPriority1.size_hex * 8);
+            grandmasterPriority1.size_bin = grandmasterPriority1.size_hex * 4;
+            strcat(packet.string_bin, grandmasterPriority1.string_bin);
+            packet.size_bin += grandmasterPriority1.size_bin;
+
+            cout << "Insert grandmasterClockQuality like '12345678': " << endl;
+            cin >> grandmasterClockQuality.string_hex;
+            grandmasterClockQuality.size_hex = strlen(&grandmasterClockQuality.string_hex[0]);
+            string_hextobin(grandmasterClockQuality.string_hex, (unsigned char*)grandmasterClockQuality.string_bin, grandmasterClockQuality.size_hex * 8);
+            grandmasterClockQuality.size_bin = grandmasterClockQuality.size_hex * 4;
+            strcat(packet.string_bin, grandmasterClockQuality.string_bin);
+            packet.size_bin += grandmasterClockQuality.size_bin;
+
+            cout << "Insert grandmasterPriority2 like 'aa': " << endl;
+            cin >> grandmasterPriority2.string_hex;
+            grandmasterPriority2.size_hex = strlen(&grandmasterPriority2.string_hex[0]);
+            string_hextobin(grandmasterPriority2.string_hex, (unsigned char*)grandmasterPriority2.string_bin, grandmasterPriority2.size_hex * 8);
+            grandmasterPriority2.size_bin = grandmasterPriority2.size_hex * 4;
+            strcat(packet.string_bin, grandmasterPriority2.string_bin);
+            packet.size_bin += grandmasterPriority2.size_bin;
+
+            cout << "Insert grandmasterIdentity like '0123456789abcdef': " << endl;
+            cin >> grandmasterIdentity.string_hex;
+            grandmasterIdentity.size_hex = strlen(&grandmasterIdentity.string_hex[0]);
+            string_hextobin(grandmasterIdentity.string_hex, (unsigned char*)grandmasterIdentity.string_bin, grandmasterIdentity.size_hex * 8);
+            grandmasterIdentity.size_bin = grandmasterIdentity.size_hex * 4;
+            strcat(packet.string_bin, grandmasterIdentity.string_bin);
+            packet.size_bin += grandmasterIdentity.size_bin;
+
+            cout << "Insert stepsRemoved like 'bbcc': " << endl;
+            cin >> stepsRemoved.string_hex;
+            stepsRemoved.size_hex = strlen(&stepsRemoved.string_hex[0]);
+            string_hextobin(stepsRemoved.string_hex, (unsigned char*)stepsRemoved.string_bin, stepsRemoved.size_hex * 8);
+            stepsRemoved.size_bin = stepsRemoved.size_hex * 4;
+            strcat(packet.string_bin, stepsRemoved.string_bin);
+            packet.size_bin += stepsRemoved.size_bin;
+
+            cout << "Insert timeSource. '10' for atomic clock, '20' for GPS, '30' for Terrestrial_Radio, '40' for PTP, '50' for NTP, '60' for Handset, '90' for Others, 'A0' for Internal OSC: " << endl;
+            cin >> timeSource.string_hex;
+            timeSource.size_hex = strlen(&timeSource.string_hex[0]);
+            string_hextobin(timeSource.string_hex, (unsigned char*)timeSource.string_bin, timeSource.size_hex * 8);
+            timeSource.size_bin = timeSource.size_hex * 4;
+            strcat(packet.string_bin, timeSource.string_bin);
+            packet.size_bin += timeSource.size_bin;
+
+            packet_to_buf(packet.buf, packet.string_bin);
+            packet.size_buf = packet.size_bin / 8;
+
+            bytes_sended = Ethernet_sendPacket(ethSocket, (unsigned char*)packet.buf, packet.size_buf);
+            string_bintohex((unsigned char*)packet.string_bin, hex_packet);
+            printf("Data sent: %d bytes:\n%s\n", bytes_sended, &hex_packet[0]);
         }
         else if(selected_ptp_type == ptp_type::signaling_ptp){
             cout << "It's not ready now!" << endl;
