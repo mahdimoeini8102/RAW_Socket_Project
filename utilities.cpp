@@ -219,13 +219,15 @@ void send_packet_function (EthernetSocket ethSocket, unsigned char* destination_
                 super_data packet;
                 strcpy(packet.string_bin, init_packet.string_bin);
                 packet.size_bin += 96;
-                string raw_packet;
-                cout << "OK. write a correct data in binary like '1000100011110111':" << endl;
-                cin >> raw_packet;
+                string hex_raw_packet;
+                unsigned char bin_raw_packet[1000];
+                cout << "OK. write a correct data without mac addresses in hex like '88f70b020040010000000000000000028000000000000000000000000000000000000500abcdef0123456789abcd852000aa12345678aa0123456789abcdefbbcc20':" << endl;
+                cin >> hex_raw_packet;
+                string_hextobin(hex_raw_packet, bin_raw_packet, 1000);
                 int bytes_sended;
                 string hex_packet;
-                strcat(packet.string_bin, &raw_packet[0]);
-                packet.size_bin += strlen(&raw_packet[0]);
+                strcat(packet.string_bin, (char*)bin_raw_packet);
+                packet.size_bin += strlen((char*)bin_raw_packet);
                 packet_to_buf(packet.buf, packet.string_bin);
                 packet.size_buf = packet.size_bin / 8;
                 bytes_sended = Ethernet_sendPacket(ethSocket, (unsigned char*)packet.buf, packet.size_buf);
@@ -255,3 +257,4 @@ void send_packet_function (EthernetSocket ethSocket, unsigned char* destination_
 void test(){
     cout << "Hello test" << endl;
 }
+
