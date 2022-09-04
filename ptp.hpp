@@ -33,14 +33,8 @@ const string ptp_type_string[20] = {
                                 "\0"
                                  };
 
+
 const string flag_field_string[17] = {
-                                "Insert alternateMasterFlag (A TRUE value for this flag indicates that the message is transmitted from a port not in the MASTER state.) ('0' or '1'): ",
-                                "Insert twoStepFlag (A TRUE value for this flag indicates that the message was sent from a two-step clock.) ('0' or '1'): ",
-                                "Insert unicastFlag (A TRUE value for this flag indicates that the message was transmitted as a unicast message.) ('0' or '1'): ",
-                                "\0",
-                                "\0",
-                                "Insert PTP profile Specific 1 (Not important) ('0' or '1'): ",
-                                "Insert PTP profile Specific 2 (Not important) ('0' or '1'): ",
                                 "Insert leap61 (Not important) ('0' or '1'): ",
                                 "Insert leap59 (Not important) ('0' or '1'): ",
                                 "Insert currentUtcOffsetValid (Not important) ('0' or '1'): ",
@@ -49,8 +43,14 @@ const string flag_field_string[17] = {
                                 "Insert frequencyTraceable (Not important) ('0' or '1'): ",
                                 "\0",
                                 "\0",
+                                "Insert alternateMasterFlag (A TRUE value for this flag indicates that the message is transmitted from a port not in the MASTER state.) ('0' or '1'): ",
+                                "Insert twoStepFlag (A TRUE value for this flag indicates that the message was sent from a two-step clock.) ('0' or '1'): ",
+                                "Insert unicastFlag (A TRUE value for this flag indicates that the message was transmitted as a unicast message.) ('0' or '1'): ",
                                 "\0",
-                                "\0"
+                                "\0",
+                                "Insert PTP profile Specific 1 (Not important) ('0' or '1'): ",
+                                "Insert PTP profile Specific 2 (Not important) ('0' or '1'): ",
+                                "\0",
                                 };
 
 const char PTP_ETHERTYPE[] = "1000100011110111";

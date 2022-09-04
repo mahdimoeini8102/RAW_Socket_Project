@@ -55,20 +55,20 @@ void generate_ptp_header (char type, unsigned char* result) {
         messageLength[0] = '0'; messageLength[1] = '0'; messageLength[2] = '0'; messageLength[3] = '0';
     }
 
-    domainNumber[0] = '0'; domainNumber[1] = '1';
+    cout << "Insert domainNumber like '01': " << endl;
+    cin >> domainNumber;
 
     reserved2[0] = '0'; reserved2[1] = '0';
 
     string s_flagField;
-    unsigned char b_flagField[17];
+    unsigned char b_flagField[17] = {'\0'};
     for(int i = 0; i < 16; i++){
         if(flag_field_string[i][0]){
             cout << flag_field_string[i] << endl;
-            cin >> b_flagField[i];
+            cin >> b_flagField[15 - i];
         }
-        else b_flagField[i] = '0';
+        else b_flagField[15 - i] = '0';
     }
-    b_flagField[16] = '\0';
     string_bintohex(b_flagField, s_flagField);
     strcpy(flagField, &s_flagField[0]);
 
@@ -79,10 +79,11 @@ void generate_ptp_header (char type, unsigned char* result) {
         reserved3[i] = '0';
     }
         
+    cout << "Insert sourcePortIdentity like '00000000000000000001': " << endl;
+    cin >> sourcePortIdentity;
 
-    for(int i = 0; i < 20; i++) sourcePortIdentity[i] = '0';
-
-    for(int i = 0; i < 4; i++) sequenceId[i] = '0';
+    cout << "Insert sequenceId like '0001': " << endl;
+    cin >> sequenceId;
 
     if(type == ptp_type::sync_ptp){
         controlField[0] = '0'; controlField[1] = '0';
@@ -102,7 +103,9 @@ void generate_ptp_header (char type, unsigned char* result) {
     else{
         controlField[0] = '0'; controlField[1] = '5';
     }
-    logMessageInterval[0] = '0'; logMessageInterval[1] = '0';
+
+    cout << "Insert logMessageInterval like '0f':" << endl;
+    cin >> logMessageInterval;
 
     
 
