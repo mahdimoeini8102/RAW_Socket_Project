@@ -72,14 +72,14 @@ void generate_ptp_header (char type, unsigned char* result) {
     string_bintohex(b_flagField, s_flagField);
     strcpy(flagField, &s_flagField[0]);
 
-    cout << "Insert correctionField like '0000000000028000':" << endl;
+    cout << "Insert correctionField like '0000000000028000': " << endl;
     cin >> correctionField;
 
     for(int i = 0; i < 8; i++){
         reserved3[i] = '0';
     }
         
-    cout << "Insert sourcePortIdentity like '00000000000000000001': " << endl;
+    cout << "Insert sourcePortIdentity like '00000000000000000001' (First 16 octets shows clockIdentity and other octets shows sourcePortID): " << endl;
     cin >> sourcePortIdentity;
 
     cout << "Insert sequenceId like '0001': " << endl;
@@ -104,7 +104,7 @@ void generate_ptp_header (char type, unsigned char* result) {
         controlField[0] = '0'; controlField[1] = '5';
     }
 
-    cout << "Insert logMessageInterval like '0f':" << endl;
+    cout << "Insert logMessageInterval like '0f' (It is the mean time interval between successive messages that represented as the logarithm to the base 2 of this time interval measured in seconds on the local clock of the device sending the message):" << endl;
     cin >> logMessageInterval;
 
     
@@ -435,7 +435,7 @@ void ptp_send (EthernetSocket ethSocket, char* init_packet) {
             strcat(packet.string_bin, grandmasterIdentity.string_bin);
             packet.size_bin += grandmasterIdentity.size_bin;
 
-            cout << "Insert stepsRemoved like 'bbcc': " << endl;
+            cout << "Insert stepsRemoved like 'bbcc' (This value is the number of communication paths traversed between the local clock and the grandmaster clock.): " << endl;
             cin >> stepsRemoved.string_hex;
             stepsRemoved.size_hex = strlen(&stepsRemoved.string_hex[0]);
             string_hextobin(stepsRemoved.string_hex, (unsigned char*)stepsRemoved.string_bin, stepsRemoved.size_hex * 8);
